@@ -1,0 +1,43 @@
+server:
+  port: 8088
+
+spring:
+  application:
+    name: search-service
+  cloud:
+    config:
+      uri: http://localhost:8888
+      fail-fast: true
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URI:http://localhost:9200}
+    username: ${ELASTICSEARCH_USERNAME:}
+    password: ${ELASTICSEARCH_PASSWORD:}
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+search:
+  cache:
+    ttl: 3600
+  index:
+    shards: 1
+    replicas: 1
+  query:
+    max-results: 100
+    timeout: 10s
+
+logging:
+  level:
+    com.acsp: DEBUG
+    org.springframework: INFO
+    org.elasticsearch: INFO

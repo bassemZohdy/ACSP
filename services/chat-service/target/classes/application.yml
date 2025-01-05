@@ -1,0 +1,38 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: chat-service
+  cloud:
+    config:
+      uri: http://localhost:8888
+      fail-fast: true
+  data:
+    mongodb:
+      uri: mongodb://${MONGODB_USERNAME:}:${MONGODB_PASSWORD:}@${MONGODB_HOST:localhost}:${MONGODB_PORT:27017}/${MONGODB_DATABASE:acsp_chat}
+      auto-index-creation: true
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+websocket:
+  allowed-origins: ${WEBSOCKET_ALLOWED_ORIGINS:*}
+  endpoint: /ws
+  topic-prefix: /topic
+  application-prefix: /app
+
+logging:
+  level:
+    com.acsp: DEBUG
+    org.springframework: INFO

@@ -1,238 +1,191 @@
 # Abstract Customizable Customer Support Portal (ACSP)
 
-## **Overview**
-The Abstract Customizable Customer Support Portal (ACSP) is a multi-tenant, scalable, and customizable solution for managing customer support services. The portal is designed to be enterprise-grade, cloud-agnostic, and configurable for diverse industries. It supports integration with external ticketing systems and provides the flexibility to manage tickets internally if required. The system also supports autoscaling, branding, role-based access control, and robust notification services.
+## Table of Contents
+- [Overview](#overview)
+- [Key Features](#key-features)
+  - [Multi-Tenancy](#multi-tenancy)
+  - [Flexible Ticketing](#flexible-ticketing)
+  - [Role-Based Access Control](#role-based-access-control)
+  - [AI-Powered Support](#ai-powered-support)
+  - [Observability](#observability)
+  - [Autoscaling](#autoscaling)
+- [Quick Start](#quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+- [Architecture Overview](#architecture-overview)
+  - [Microservices](#microservices)
+  - [Frontend](#frontend)
+  - [Infrastructure](#infrastructure)
+- [Development](#development)
+  - [Prerequisites](#prerequisites-1)
+  - [Quick Start](#quick-start-1)
+- [Deployment](#deployment)
+  - [Local Development](#local-development)
+  - [Production](#production)
+- [Documentation](#documentation)
+  - [Architecture Details](/docs/architecture/)
+  - [Feature Documentation](/docs/features/)
+  - [Operations Guide](/docs/operations/)
+  - [API Documentation](/docs/api/)
+- [Contributing](#contributing)
+- [License](#license)
 
----
+## Overview
+The Abstract Customizable Customer Support Portal (ACSP) is a multi-tenant, scalable, and customizable solution for managing customer support services. The portal is designed to be enterprise-grade, cloud-agnostic, and configurable for diverse industries.
 
-## **Core Features**
+## Key Features
 
-### **1. Multi-Tenancy**
+### Multi-Tenancy
 - **Tenant Isolation**:
-  - Data and configurations are isolated per tenant.
-  - Support for schema-based multi-tenancy in PostgreSQL or separate databases per tenant.
+  - Data and configurations are isolated per tenant
+  - Support for schema-based multi-tenancy in PostgreSQL or separate databases per tenant
 
 - **Tenant-Specific Customizations**:
-  - Branding: Configurable logos, themes, and colors.
-  - Subdomains: E.g., `support.companyA.com` for Company A.
+  - Branding: Configurable logos, themes, and colors
+  - Subdomains: E.g., `support.companyA.com` for Company A
 
-### **2. Flexible Ticketing**
-- **External Integration**:
-  - Adapter-based integration with ticketing systems like Jira, Zendesk, or ServiceNow.
-  - Configurable API parameters for external systems (endpoints, authentication).
+### AI-Powered Support
+- Intelligent chatbot with LLM integration
+- Knowledge base with semantic search
+- Smart ticket routing and classification
+- Multi-provider LLM support (Cloud & Self-hosted)
 
-- **Internal Ticketing**:
-  - Full lifecycle management (creation, update, SLA tracking).
-  - Optional integration with a workflow engine (e.g., Camunda) to support custom workflows.
+## Quick Start
 
-### **3. Role-Based Access Control (RBAC)**
-- **Roles**:
-  - Admin: Manage tenants, users, configurations, and reporting.
-  - Agent: Resolve tickets, respond to customers, and manage knowledge bases.
-  - Customer: Raise tickets, view statuses, and interact with support agents.
-
-### **4. Notification Service**
-- **Channels**:
-  - Email, SMS, and push notifications.
-  - Webhooks for tenant-specific notification systems.
-
-- **Use Cases**:
-  - Ticket creation, updates, SLA breaches.
-  - Workflow status changes.
-
-### **5. Observability**
-- **Monitoring**:
-  - Integrated with OpenTelemetry for tracing and metrics.
-  - Centralized dashboards with Prometheus and Grafana.
-
-- **Logging**:
-  - Centralized log aggregation with ELK stack (Elasticsearch, Logstash, Kibana).
-
-### **6. Autoscaling**
-- **Levels of Scaling**:
-  - Microservice-Level: Individual services scale based on load (e.g., ticketing, notifications).
-  - Tenant-Level: Resource allocation scales for tenants experiencing high traffic.
-
-- **Implementation**:
-  - Kubernetes Horizontal Pod Autoscaler (HPA).
-  - Metrics-driven scaling using Prometheus.
-
----
-
-## **Technical Architecture**
-
-### **Frontend**
-- **Framework**: Angular
-- **Features**:
-  - Dynamic theming for tenant-specific branding.
-  - Modular components for extensibility.
-  - Role-based UI rendering.
-
-### **Backend**
-- **Framework**: Spring Boot with Java
-- **Microservices**:
-  1. **Authentication Service**: Handles SSO and RBAC.
-  2. **Ticketing Service**: Routes ticketing operations (internal or external).
-  3. **Notification Service**: Manages email/SMS/push notifications.
-  4. **Tenant Management Service**: Manages tenant-specific configurations.
-  5. **Configuration Service**: Centralized configuration repository for runtime decisions.
-
-### **Data Storage**
-- **PostgreSQL**:
-  - Multi-tenancy with schema-based or separate database design.
-
-- **Redis**:
-  - Caching for frequently accessed data.
-  - Session storage for scalability.
-
-### **File Storage**
-- **Cloud-Agnostic**:
-  - Uses Kubernetes PVC and StorageClass for dynamic provisioning.
-  - Compatible with AWS EBS, Azure Managed Disks, GCP Persistent Disks.
-
-### **Workflow Engine**
-- **Optional**:
-  - Used only when managing tickets internally.
-  - Example Engines: Camunda or Temporal.
-
-### **Observability**
-- **OpenTelemetry**: Distributed tracing and metrics.
-- **Prometheus**: Metrics collection.
-- **Grafana**: Dashboards and alerting.
-
----
-
-## **Deployment and Infrastructure**
-
-### **Infrastructure as Code**
-- **Tool**: Terraform
-- **Cloud-Agnostic Design**:
-  - Modular configurations for AWS, Azure, and GCP.
-  - Supports multi-cloud deployments.
-
-### **Deployment**
-- **Local**: Docker and Docker Compose.
-- **Production**: Kubernetes with Helm for orchestration.
-  - Separate namespaces for tenant isolation if required.
-  - HPA for scaling microservices dynamically.
-
----
-
-## **Admin Features**
-
-### **1. Tenant Management**
-- Add, update, and delete tenants.
-- Configure branding and integration parameters.
-
-### **2. User Management**
-- Create and manage users across roles (admin, agent, customer).
-- Assign and revoke permissions dynamically.
-
-### **3. Reporting and Analytics**
-- View system usage metrics (tickets, SLA breaches, customer satisfaction).
-- Unified reporting for both internal and external ticketing.
-
-### **4. Notifications Management**
-- Configure notification templates (email, SMS, push).
-- Monitor delivery success rates.
-
----
-
-## **Scaling and Monetization**
-
-### **Scaling**
-- **Microservice-Level**:
-  - Autoscale based on workload metrics.
-
-- **Tenant-Level**:
-  - Allocate additional resources to tenants experiencing high usage.
-  - Use Kubernetes ResourceQuota and LimitRange.
-
-### **Monetization Opportunities**
-- **Subscription Tiers**:
-  - Basic: External ticketing, limited notifications.
-  - Pro: Internal ticketing, advanced analytics, branding.
-  - Enterprise: Dedicated instances, enhanced SLAs.
-
-- **Custom Features**:
-  - Charge for tenant-specific integrations or workflows.
-
----
-
-## **Outcome**
-The ACSP provides a robust, enterprise-ready solution for customer support. With its modular architecture, multi-tenancy, and scalability, it caters to diverse businesses while ensuring high performance and reliability. This architecture is optimized for flexibility, making it a strong candidate for a SaaS offering targeting multiple industries.
-
----
-
-## **Version**
-Current Version: 1.0.0
-
-## **License**
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## **Prerequisites**
-- Java 17 or higher
+### Prerequisites
+- Java 21 or higher
 - Node.js 18.x or higher
 - Docker and Docker Compose
-- Kubernetes cluster (for production deployment)
-- PostgreSQL 14+
-- Redis 6+
+- Kubernetes cluster (for production)
 
-## **Installation Guide**
+### Installation
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/ACSP.git
+cd ACSP
+
+# Install backend dependencies and build
+cd services
+mvn clean install
+
+# Install frontend dependencies and build
+cd ../frontend
+npm install
+npm run build
+```
+
+### Current Versions
+#### Backend (Java) Dependencies:
+- Spring Boot: 3.2.1 (Latest stable)
+- Spring Cloud: 2023.0.0 (Latest stable)
+- Spring AI: 1.0.0-M5 (Latest milestone)
+- OpenAPI: 2.3.0 (Latest stable)
+- JJWT: 0.12.3 (Latest stable)
+- MapStruct: 1.5.5.Final (Latest stable)
+- Lombok: 1.18.30 (Latest stable)
+
+#### Frontend (Angular) Dependencies:
+- Angular: 17.0.8 (Latest stable)
+- Angular Material: 17.0.4 (Latest stable)
+- RxJS: 7.8.1 (Latest stable)
+- TypeScript: 5.2.2 (Latest stable)
+- Zone.js: 0.14.3 (Latest stable)
+
+## Architecture Overview
+ACSP follows a microservices architecture with the following components:
+
+### Microservices
+1. **Gateway Service**
+   - API Gateway using Spring Cloud Gateway
+   - Route management and load balancing
+   - Security and authentication
+
+2. **Config Service**
+   - Centralized configuration management
+   - Environment-specific configurations
+   - Runtime configuration updates
+
+3. **Auth Service**
+   - Authentication and authorization
+   - User management
+   - Role-based access control
+
+4. **Tenant Service**
+   - Multi-tenant management
+   - Tenant configuration
+   - Tenant isolation
+
+5. **AI Service**
+   - LLM integration
+   - AI model management
+   - Inference optimization
+
+6. **Knowledge Base Service**
+   - Document management
+   - Semantic search
+   - Version control
+
+7. **Chat Service**
+   - Real-time chat functionality
+   - Chat history management
+   - Bot integration
+
+8. **Search Service**
+   - Full-text search
+   - Faceted search
+   - Search analytics
+
+9. **Analytics Service**
+   - Business metrics
+   - Usage analytics
+   - Performance monitoring
+
+10. **Notification Service**
+    - Email notifications
+    - Push notifications
+    - Notification templates
+
+### Frontend
+- Angular 17-based SPA
+- Material Design components
+- Responsive layout
+- Real-time updates
+
+### Infrastructure
+- Kubernetes-ready
+- Cloud-agnostic design
+- Containerized services
+- Service mesh support
+
+## Development
 
 ### Local Development Setup
-1. Clone the repository:
+1. Start the Config Service first
+2. Start the Eureka Service
+3. Start other services in any order
+4. Start the frontend development server:
    ```bash
-   git clone https://github.com/yourusername/ACSP.git
-   cd ACSP
-   ```
-
-2. Set up the development environment:
-   ```bash
-   # Backend setup
-   cd backend
-   ./mvnw clean install
-
-   # Frontend setup
-   cd ../frontend
-   npm install
-   ```
-
-3. Configure environment variables:
-   - Copy `.env.example` to `.env`
-   - Update the variables with your configuration
-
-4. Start the development servers:
-   ```bash
-   # Start backend services
-   docker-compose up -d
-   
-   # Start frontend development server
+   cd frontend
    npm start
    ```
 
-The application will be available at `http://localhost:4200`
+### Building for Production
+1. Backend:
+   ```bash
+   cd services
+   mvn clean install -DskipTests
+   ```
 
-### Production Deployment
-Refer to the detailed deployment guide in `docs/deployment.md`
+2. Frontend:
+   ```bash
+   cd frontend
+   npm run build --prod
+   ```
 
-## **API Documentation**
-API documentation is available at:
-- Development: `http://localhost:8080/swagger-ui.html`
-- Production: `https://your-domain.com/api/docs`
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-For detailed API specifications, refer to `docs/api-spec.md`
+---
 
-## **Contributing**
-We welcome contributions! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### Coding Standards
-- Follow the project's coding style guide in `docs/coding-standards.md`
-- Write unit tests for new features
-- Update documentation as needed
+📚 **Detailed Documentation**: Find comprehensive documentation in the [`/docs`](/docs/) directory.

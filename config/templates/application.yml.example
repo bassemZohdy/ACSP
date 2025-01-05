@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: acsp
+  
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
+    
+  elasticsearch:
+    uris: http://${ES_HOST}:${ES_PORT}
+    
+server:
+  port: 8080
+  
+security:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration: ${JWT_EXPIRATION}
+    
+ai:
+  llm:
+    provider: openai  # or anthropic, local
+    openai:
+      api-key: ${OPENAI_API_KEY}
+    anthropic:
+      api-key: ${ANTHROPIC_API_KEY}
+    local:
+      enabled: ${ENABLE_LOCAL_MODEL}
+      model-path: ${LOCAL_MODEL_PATH}
+      
+  vector-store:
+    provider: ${VECTOR_DB_TYPE}
+    api-key: ${VECTOR_DB_API_KEY}
+    environment: ${VECTOR_DB_ENVIRONMENT}
+    
+mail:
+  host: ${SMTP_HOST}
+  port: ${SMTP_PORT}
+  username: ${SMTP_USERNAME}
+  password: ${SMTP_PASSWORD}
+  
+cors:
+  allowed-origins: ${FRONTEND_URL}
+  
+logging:
+  level:
+    root: INFO
+    com.acsp: DEBUG

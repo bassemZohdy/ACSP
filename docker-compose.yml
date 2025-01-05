@@ -1,0 +1,310 @@
+version: '3.8'
+
+services:
+  # Infrastructure Services
+  postgres:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_DB: acsp
+      POSTGRES_USER: acsp_user
+      POSTGRES_PASSWORD: acsp_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U acsp_user -d acsp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  elasticsearch:
+    image: elasticsearch:8.7.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q 'status.*green\\|status.*yellow'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Service Discovery & Configuration
+  eureka:
+    image: steeltoeoss/eureka-server
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  config-server:
+    build:
+      context: ./services/config-service
+      dockerfile: ../deployment/docker/Dockerfile.service-template
+      args:
+        SERVICE_NAME: config-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - CONFIG_GIT_URI=${CONFIG_GIT_URI:-https://github.com/yourusername/acsp-config.git}
+      - CONFIG_GIT_BRANCH=${CONFIG_GIT_BRANCH:-main}
+    ports:
+      - "8888:8888"
+    depends_on:
+      eureka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # API Gateway
+  gateway:
+    build:
+      context: ./services/gateway-service
+      dockerfile: ../deployment/docker/Dockerfile.service-template
+      args:
+        SERVICE_NAME: gateway-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    ports:
+      - "8080:8080"
+    depends_on:
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Core Services
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: ../deployment/docker/Dockerfile.service-template
+      args:
+        SERVICE_NAME: auth-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key}
+      - JWT_EXPIRATION=${JWT_EXPIRATION:-86400}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  tenant-service:
+    build:
+      context: ./services/tenant-service
+      dockerfile: ../deployment/docker/Dockerfile.service-template
+      args:
+        SERVICE_NAME: tenant-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ticket-service:
+    build:
+      context: ./services/ticket-service
+      dockerfile: ../deployment/docker/Dockerfile.service-template
+      args:
+        SERVICE_NAME: ticket-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  notification-service:
+    build:
+      context: ./services/notification-service
+      dockerfile: ../deployment/docker/Dockerfile.service-template
+      args:
+        SERVICE_NAME: notification-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+    depends_on:
+      redis:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AI and Search Services
+  ai-service:
+    build:
+      context: ./services/ai-service
+      dockerfile: ../deployment/docker/Dockerfile.service-template
+      args:
+        SERVICE_NAME: ai-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      redis:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  kb-service:
+    build:
+      context: ./services/kb-service
+      dockerfile: ../deployment/docker/Dockerfile.service-template
+      args:
+        SERVICE_NAME: kb-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  chat-service:
+    build:
+      context: ./services/chat-service
+      dockerfile: ../deployment/docker/Dockerfile.service-template
+      args:
+        SERVICE_NAME: chat-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      redis:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8087/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  search-service:
+    build:
+      context: ./services/search-service
+      dockerfile: ../deployment/docker/Dockerfile.service-template
+      args:
+        SERVICE_NAME: search-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Analytics & Observability
+  analytics-service:
+    build:
+      context: ./services/analytics-service
+      dockerfile: ../deployment/docker/Dockerfile.service-template
+      args:
+        SERVICE_NAME: analytics-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8089/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  observability-service:
+    build:
+      context: ./services/observability-service
+      dockerfile: ../deployment/docker/Dockerfile.service-template
+      args:
+        SERVICE_NAME: observability-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+  redis_data:
+  elasticsearch_data:

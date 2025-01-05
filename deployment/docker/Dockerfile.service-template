@@ -1,0 +1,14 @@
+# Build stage
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /app
+COPY ./services/common /app/services/common
+COPY ./services/${SERVICE_NAME} /app/services/${SERVICE_NAME}
+COPY ./services/pom.xml /app/services/
+RUN --mount=type=cache,target=/root/.m2 mvn -f /app/services/pom.xml clean package -DskipTests
+
+# Run stage
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+COPY --from=build /app/services/${SERVICE_NAME}/target/*.jar /app/service.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "/app/service.jar"]

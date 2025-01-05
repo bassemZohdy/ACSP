@@ -1,0 +1,50 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: notification-service
+  cloud:
+    config:
+      uri: http://localhost:8888
+      fail-fast: true
+  data:
+    mongodb:
+      uri: mongodb://${MONGODB_USERNAME:}:${MONGODB_PASSWORD:}@${MONGODB_HOST:localhost}:${MONGODB_PORT:27017}/${MONGODB_DATABASE:acsp_notifications}
+      auto-index-creation: true
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+notification:
+  email:
+    from: ${EMAIL_FROM:no-reply@acsp.com}
+    enabled: ${EMAIL_ENABLED:false}
+  templates:
+    path: classpath:/templates/email/
+
+logging:
+  level:
+    com.acsp: DEBUG
+    org.springframework: INFO
