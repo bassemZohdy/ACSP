@@ -162,3 +162,77 @@ The Abstract Customizable Customer Support Portal (ACSP) is a multi-tenant, scal
 ## **Outcome**
 The ACSP provides a robust, enterprise-ready solution for customer support. With its modular architecture, multi-tenancy, and scalability, it caters to diverse businesses while ensuring high performance and reliability. This architecture is optimized for flexibility, making it a strong candidate for a SaaS offering targeting multiple industries.
 
+---
+
+## **Version**
+Current Version: 1.0.0
+
+## **License**
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## **Prerequisites**
+- Java 17 or higher
+- Node.js 18.x or higher
+- Docker and Docker Compose
+- Kubernetes cluster (for production deployment)
+- PostgreSQL 14+
+- Redis 6+
+
+## **Installation Guide**
+
+### Local Development Setup
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/ACSP.git
+   cd ACSP
+   ```
+
+2. Set up the development environment:
+   ```bash
+   # Backend setup
+   cd backend
+   ./mvnw clean install
+
+   # Frontend setup
+   cd ../frontend
+   npm install
+   ```
+
+3. Configure environment variables:
+   - Copy `.env.example` to `.env`
+   - Update the variables with your configuration
+
+4. Start the development servers:
+   ```bash
+   # Start backend services
+   docker-compose up -d
+   
+   # Start frontend development server
+   npm start
+   ```
+
+The application will be available at `http://localhost:4200`
+
+### Production Deployment
+Refer to the detailed deployment guide in `docs/deployment.md`
+
+## **API Documentation**
+API documentation is available at:
+- Development: `http://localhost:8080/swagger-ui.html`
+- Production: `https://your-domain.com/api/docs`
+
+For detailed API specifications, refer to `docs/api-spec.md`
+
+## **Contributing**
+We welcome contributions! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### Coding Standards
+- Follow the project's coding style guide in `docs/coding-standards.md`
+- Write unit tests for new features
+- Update documentation as needed
